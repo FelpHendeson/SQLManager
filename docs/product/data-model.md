@@ -70,9 +70,15 @@
 ### Dependency
 * `id` (PK)
 * `qualified_name` (ex.: `database.schema.dependency.<hash>`)
-* `source_object_ref` (FK polimórfica -> ObjectRef)
-* `target_object_ref` (FK polimórfica -> ObjectRef)
-* `dependency_type` (ex.: `CALLS`, `READS`, `WRITES`)
+* `source_object_ref` (tipo + identificador do objeto de origem)
+  * `object_type` (ex.: `TABLE`, `FUNCTION`, `PROCEDURE`)
+  * `object_identifier` (ex.: `database.schema.table`)
+* `target_object_ref` (tipo + identificador do objeto de destino)
+  * `object_type` (ex.: `TABLE`, `FUNCTION`, `PROCEDURE`)
+  * `object_identifier` (ex.: `database.schema.table`)
+* `type` (ex.: `calls`, `reads`, `writes`, `uses_type`)
+* `scope` (ex.: `internal`, `external`)
+* `target_location` (ex.: `host/db`, opcional para dependências externas)
 
 ## Entidades auxiliares
 
