@@ -11,6 +11,10 @@
 * `comment`
 * `row_count`
 * `created_at`
+* `inferred_type`
+* `confidence`
+* `source_hint`
+* `inference_notes`
 
 ### Database
 * `id` (PK)
@@ -40,6 +44,10 @@
 * `nullable`
 * `default`
 * `ordinal_position`
+* `inferred_type` (FK -> InferredType)
+* `confidence` (ex.: `0.0` - `1.0`)
+* `source_hint` (ex.: `heuristic`, `parser`, `catalog`)
+* `inference_notes`
 
 ### Package
 * `id` (PK)
@@ -56,6 +64,10 @@
 * `language`
 * `definition`
 * `return_type`
+* `inferred_type` (FK -> InferredType)
+* `confidence` (ex.: `0.0` - `1.0`)
+* `source_hint` (ex.: `heuristic`, `parser`, `catalog`)
+* `inference_notes`
 
 ### Function
 * `id` (PK)
@@ -66,6 +78,10 @@
 * `language`
 * `definition`
 * `return_type`
+* `inferred_type` (FK -> InferredType)
+* `confidence` (ex.: `0.0` - `1.0`)
+* `source_hint` (ex.: `heuristic`, `parser`, `catalog`)
+* `inference_notes`
 
 ### Dependency
 * `id` (PK)
@@ -79,6 +95,10 @@
 * `type` (ex.: `calls`, `reads`, `writes`, `uses_type`)
 * `scope` (ex.: `internal`, `external`)
 * `target_location` (ex.: `host/db`, opcional para dependências externas)
+* `inferred_type` (FK -> InferredType)
+* `confidence` (ex.: `0.0` - `1.0`)
+* `source_hint` (ex.: `heuristic`, `parser`, `catalog`)
+* `inference_notes`
 
 ## Entidades auxiliares
 
@@ -105,6 +125,12 @@
 * `length`
 * `precision`
 * `scale`
+
+### InferredType
+* `id` (PK)
+* `code` (ex.: `DATA_TYPE`, `SIDE_EFFECT`, `DEPENDENCY_KIND`)
+* `name`
+* `description`
 
 ## Relações 1—N
 * `Database` 1—N `Schema`
