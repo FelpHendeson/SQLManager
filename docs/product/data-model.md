@@ -55,13 +55,16 @@
 ### Dependency
 * `id` (PK)
 * `qualified_name` (ex.: `database.schema.dependency.<hash>`)
-* `source_object_type` (enum)
-* `source_object_id` (FK polimórfica)
-* `target_object_type` (enum)
-* `target_object_id` (FK polimórfica)
+* `source_object_ref` (FK polimórfica -> ObjectRef)
+* `target_object_ref` (FK polimórfica -> ObjectRef)
 * `dependency_type` (ex.: `CALLS`, `READS`, `WRITES`)
 
 ## Entidades auxiliares
+
+### ObjectRef
+* `id` (PK)
+* `object_type` (enum)
+* `object_id` (FK polimórfica)
 
 ### Parameter
 * `id` (PK)
@@ -81,6 +84,17 @@
 * `length`
 * `precision`
 * `scale`
+
+## Relações 1—N
+* `Database` 1—N `Schema`
+* `Schema` 1—N `Table`
+* `Table` 1—N `Column`
+* `Schema` 1—N `Package`
+* `Package` 1—N `Procedure`
+* `Package` 1—N `Function`
+* `Procedure` 1—N `Parameter`
+* `Function` 1—N `Parameter`
+* `ObjectRef` 1—N `Dependency` (como `source_object_ref` e `target_object_ref`)
 
 ## Regras de identificação
 * Todas as entidades possuem `id` interno e `qualified_name` único e estável.
