@@ -2,6 +2,16 @@
 
 ## Entidades principais
 
+## Campos obrigatórios de identificação (comuns)
+* `name`
+* `qualified_name`
+* `owner`
+
+## Campos opcionais (comuns)
+* `comment`
+* `row_count`
+* `created_at`
+
 ### Database
 * `id` (PK)
 * `qualified_name` (ex.: `oracle://host:port/service`)
@@ -26,9 +36,9 @@
 * `qualified_name` (ex.: `database.schema.table.column`)
 * `name`
 * `table_id` (FK -> Table)
-* `data_type_id` (FK -> DataType)
+* `data_type`
 * `nullable`
-* `default_value`
+* `default`
 * `ordinal_position`
 
 ### Package
@@ -43,6 +53,9 @@
 * `name`
 * `schema_id` (FK -> Schema)
 * `package_id` (FK -> Package, opcional)
+* `language`
+* `definition`
+* `return_type`
 
 ### Function
 * `id` (PK)
@@ -50,7 +63,9 @@
 * `name`
 * `schema_id` (FK -> Schema)
 * `package_id` (FK -> Package, opcional)
-* `return_type_id` (FK -> DataType)
+* `language`
+* `definition`
+* `return_type`
 
 ### Dependency
 * `id` (PK)
@@ -70,8 +85,8 @@
 * `id` (PK)
 * `qualified_name` (ex.: `database.schema.procedure.parameter`)
 * `name`
-* `position`
-* `direction` (ex.: `IN`, `OUT`, `INOUT`)
+* `ordinal_position`
+* `mode` (ex.: `IN`, `OUT`, `INOUT`)
 * `procedure_id` (FK -> Procedure, opcional)
 * `function_id` (FK -> Function, opcional)
 * `data_type_id` (FK -> DataType)
