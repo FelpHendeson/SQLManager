@@ -1,16 +1,18 @@
 # SQLManager
 Aplicação para auxiliar e facilitar a escrita e leitura de SQL.
 
-## Implementação inicial (TypeScript + MongoDB)
+## Monolito (API + banco + UI)
 
-A base do projeto agora é em **TypeScript** e persiste o catálogo em **MongoDB**.
-O acesso ao banco é configurado via variáveis de ambiente (sem credenciais no código).
+A aplicação é um **monolito** em TypeScript que expõe:
+- **API** REST para consultar/criar catálogo.
+- **Persistência MongoDB** para armazenar o catálogo.
+- **UI simples** servida pelo próprio servidor.
 
-### Pré-requisitos
+## Pré-requisitos
 - Node.js 18+
 - MongoDB Atlas ou instância local
 
-### Configuração
+## Configuração
 1. Copie o arquivo de exemplo:
    ```bash
    cp .env.example .env
@@ -18,13 +20,18 @@ O acesso ao banco é configurado via variáveis de ambiente (sem credenciais no 
 2. Preencha as variáveis no `.env`:
    - `MONGODB_URI`
    - `MONGODB_DATABASE`
+   - `PORT` (opcional)
 
-### Rodando o seed inicial
+## Rodando
 ```bash
 npm install
 npm run build
-node dist/index.js
+npm run start
 ```
 
-O seed inicial cria um catálogo mínimo com uma base e um schema, seguindo as
-pré-definições do modelo.
+## Endpoints
+- `GET /api/health`
+- `GET /api/catalog`
+- `POST /api/catalog/seed`
+
+A UI básica fica disponível em `http://localhost:3000`.

@@ -1,6 +1,8 @@
 import { MongoClient } from "mongodb";
 import { Catalog } from "../catalog/models.js";
 
+type CatalogDocument = Catalog & { _id: string; updatedAt?: Date };
+
 export type MongoConfig = {
   uri: string;
   databaseName: string;
@@ -26,7 +28,12 @@ export class CatalogRepository {
 
   async load(): Promise<Catalog | null> {
     const collection = this.getCollection();
-    return await collection.findOne<Catalog>({ _id: "catalog" });
+    const document = await collection.findOne({ _id: "catalog" });
+    if (!document) {
+      return null;
+    }
+    const { _id, updatedAt, ...catalog } = document;
+    return catalog;
   }
 
   async save(catalog: Catalog): Promise<void> {
@@ -41,6 +48,6 @@ export class CatalogRepository {
   private getCollection() {
     const database = this.client.db(this.config.databaseName);
     const collectionName = this.config.collectionName ?? "catalogs";
-    return database.collection(collectionName);
+    return database.collection<CatalogDocument>(collectionName);
   }
 }
