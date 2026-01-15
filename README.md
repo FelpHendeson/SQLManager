@@ -35,6 +35,7 @@ npm run start
 3. O sistema registra o script, separa blocos e lista dependências detectadas.
 4. Clique em “Ver detalhes” para abrir a tela de análise completa.
 5. A área `/admin` permite limpeza total e inspeção bruta.
+6. KPIs de leitura indicam volume e possíveis alertas de performance.
 
 ## Endpoints
 - `GET /api/health`

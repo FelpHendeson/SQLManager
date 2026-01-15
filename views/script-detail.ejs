@@ -102,6 +102,42 @@
       </section>
 
       <section class="card">
+        <h3>KPIs de leitura</h3>
+        <div class="grid">
+          <div>
+            <strong>Linhas</strong>
+            <p><%= script.analysis.kpis.lineCount %></p>
+          </div>
+          <div>
+            <strong>Statements</strong>
+            <p><%= script.analysis.kpis.statementCount %></p>
+          </div>
+          <div>
+            <strong>Blocos</strong>
+            <p><%= script.analysis.kpis.blockCount %></p>
+          </div>
+          <div>
+            <strong>Variáveis</strong>
+            <p><%= script.analysis.kpis.variableCount %></p>
+          </div>
+          <div>
+            <strong>Cursores</strong>
+            <p><%= script.analysis.kpis.cursorCount %></p>
+          </div>
+          <div>
+            <strong>Dependências</strong>
+            <p><%= script.analysis.kpis.dependencyCount %></p>
+          </div>
+        </div>
+        <h4>Observações</h4>
+        <ul>
+          <% script.analysis.hints.forEach((hint) => { %>
+          <li><%= hint.message %></li>
+          <% }) %>
+        </ul>
+      </section>
+
+      <section class="card">
         <h3>Cursores</h3>
         <% if (script.cursors.length === 0) { %>
         <p>Nenhum cursor detectado.</p>
@@ -133,8 +169,8 @@
       <section class="card">
         <h3>Blocos detectados</h3>
         <div class="grid">
-          <% script.blocks.forEach((block) => { %>
-          <div class="card" style="background:#f9f9ff;">
+          <% blocksWithDepth.forEach((block) => { %>
+          <div class="card" style="background:#f9f9ff; margin-left: <%= block.depth * 20 %>px;">
             <span class="tag"><%= block.type %></span>
             <p><%= block.summary %></p>
           </div>

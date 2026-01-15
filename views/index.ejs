@@ -135,6 +135,7 @@
           <p>
             <span class="tag"><%= script.databaseName %></span>
             <span class="tag"><%= script.createdAt %></span>
+            <span class="tag"><%= script.analysis.kpis.blockCount %> blocos</span>
           </p>
           <p>
             <a href="/scripts/<%= script.id %>">Ver detalhes</a>
@@ -157,6 +158,12 @@
             </div>
             <% }) %>
           </div>
+          <h4>Observações de performance</h4>
+          <ul>
+            <% script.analysis.hints.forEach((hint) => { %>
+            <li><%= hint.message %></li>
+            <% }) %>
+          </ul>
         </article>
         <% }) %>
       </section>

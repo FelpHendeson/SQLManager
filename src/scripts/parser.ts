@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { ScriptArtifact, ScriptBlock, ScriptCursor, ScriptDependency, ScriptVariable } from "./models.js";
+import { ScriptArtifact, ScriptAnalysis, ScriptBlock, ScriptCursor, ScriptDependency, ScriptVariable } from "./models.js";
 
 const summarize = (content: string, fallback: string): string => {
   const trimmed = content.trim().replace(/\s+/g, " ");
@@ -21,18 +21,34 @@ const splitBlocks = (sql: string): ScriptBlock[] => {
 
     if (declareMatch) {
       const declareContent = declareMatch[0];
+      const declareId = crypto.randomUUID();
       blocks.push({
-        id: crypto.randomUUID(),
+        id: declareId,
         type: "DECLARE",
         summary: summarize(declareContent, "DECLARE"),
         content: declareContent,
       });
+
+      const cursorRegex = /cursor\s+(\w+)\s+is\s+([\s\S]*?);/gi;
+      let cursorMatch = cursorRegex.exec(declareContent);
+      while (cursorMatch) {
+        const cursorContent = cursorMatch[0].trim();
+        blocks.push({
+          id: crypto.randomUUID(),
+          type: "STATEMENT",
+          summary: summarize(cursorContent, "CURSOR"),
+          content: cursorContent,
+          parentId: declareId,
+        });
+        cursorMatch = cursorRegex.exec(declareContent);
+      }
     }
 
     if (beginMatch) {
       const beginContent = beginMatch[0];
+      const beginId = crypto.randomUUID();
       blocks.push({
-        id: crypto.randomUUID(),
+        id: beginId,
         type: "BEGIN",
         summary: summarize(beginContent, "BEGIN"),
         content: beginContent,
@@ -45,8 +61,65 @@ const splitBlocks = (sql: string): ScriptBlock[] => {
           type: "END",
           summary: "END",
           content: endMatch[0],
+          parentId: beginId,
         });
       }
+
+      const beginLines = beginContent.split(/\r?\n/);
+      const loopStack: string[] = [];
+      beginLines.forEach((line) => {
+        const normalizedLine = line.trim();
+        if (!normalizedLine) {
+          return;
+        }
+        const loopMatch = normalizedLine.match(/^for\s+\w+.*\s+loop$/i);
+        if (loopMatch) {
+          const loopId = crypto.randomUUID();
+          blocks.push({
+            id: loopId,
+            type: "STATEMENT",
+            summary: summarize(normalizedLine, "LOOP"),
+            content: normalizedLine,
+            parentId: loopStack[loopStack.length - 1] ?? beginId,
+          });
+          loopStack.push(loopId);
+          return;
+        }
+
+        if (/^end\s+loop;/i.test(normalizedLine)) {
+          loopStack.pop();
+          blocks.push({
+            id: crypto.randomUUID(),
+            type: "STATEMENT",
+            summary: "END LOOP",
+            content: normalizedLine,
+            parentId: loopStack[loopStack.length - 1] ?? beginId,
+          });
+          return;
+        }
+
+        const cursorActionMatch = normalizedLine.match(/^(open|fetch|close)\s+(\w+)/i);
+        if (cursorActionMatch) {
+          blocks.push({
+            id: crypto.randomUUID(),
+            type: "STATEMENT",
+            summary: summarize(normalizedLine, "CURSOR ACTION"),
+            content: normalizedLine,
+            parentId: loopStack[loopStack.length - 1] ?? beginId,
+          });
+          return;
+        }
+
+        if (/^(insert|update|delete|select)\b/i.test(normalizedLine)) {
+          blocks.push({
+            id: crypto.randomUUID(),
+            type: "STATEMENT",
+            summary: summarize(normalizedLine, "STATEMENT"),
+            content: normalizedLine,
+            parentId: loopStack[loopStack.length - 1] ?? beginId,
+          });
+        }
+      });
       return;
     }
 
@@ -161,10 +234,45 @@ const extractDependencies = (sql: string): ScriptDependency[] => {
   ];
 };
 
+const buildAnalysis = (rawSql: string, blocks: ScriptBlock[], variables: ScriptVariable[], cursors: ScriptCursor[], dependencies: ScriptDependency[]): ScriptAnalysis => {
+  const lineCount = rawSql.split(/\r?\n/).length;
+  const statementCount = rawSql.split(";").filter((stmt) => stmt.trim()).length;
+  const kpis = {
+    lineCount,
+    statementCount,
+    blockCount: blocks.length,
+    variableCount: variables.length,
+    cursorCount: cursors.length,
+    dependencyCount: dependencies.length,
+  };
+
+  const hints = [];
+  if (lineCount > 10000 || statementCount > 2000 || blocks.length > 2000) {
+    hints.push({
+      level: "warn" as const,
+      message:
+        "Volume alto detectado. Para acima de 10 mil linhas, recomendamos processar em lotes ou usar máquina dedicada.",
+    });
+  } else if (lineCount > 1000 || statementCount > 500) {
+    hints.push({
+      level: "info" as const,
+      message: "Arquivo grande. O tempo de análise pode ser maior em ambientes compartilhados.",
+    });
+  } else {
+    hints.push({
+      level: "info" as const,
+      message: "Volume dentro do esperado para análise rápida.",
+    });
+  }
+
+  return { kpis, hints };
+};
+
 export const parseSqlScript = (databaseName: string, fileName: string, rawSql: string): ScriptArtifact => {
   const blocks = splitBlocks(rawSql);
   const { variables, cursors } = parseDeclarations(rawSql);
   const dependencies = extractDependencies(rawSql);
+  const analysis = buildAnalysis(rawSql, blocks, variables, cursors, dependencies);
 
   return {
     id: crypto.randomUUID(),
@@ -175,6 +283,7 @@ export const parseSqlScript = (databaseName: string, fileName: string, rawSql: s
     variables,
     cursors,
     dependencies,
+    analysis,
     createdAt: new Date().toISOString(),
   };
 };

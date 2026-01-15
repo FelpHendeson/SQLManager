@@ -12,6 +12,11 @@ const __dirname = path.dirname(__filename);
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+type UploadedFile = {
+  buffer: Buffer;
+  originalname: string;
+};
+
 const getMongoConfig = (): { uri: string; databaseName: string } | null => {
   const uri = process.env.MONGODB_URI;
   const databaseName = process.env.MONGODB_DATABASE;
@@ -69,7 +74,7 @@ app.post("/scripts/upload", upload.single("sqlFile"), async (req, res) => {
     return;
   }
   const databaseName = String(req.body.databaseName ?? "").trim();
-  const file = req.file as Express.Multer.File | undefined;
+  const file = req.file as UploadedFile | undefined;
 
   if (!databaseName || !file) {
     res.status(400).send("Database e arquivo são obrigatórios.");
@@ -102,7 +107,11 @@ app.get("/scripts/:id", async (req, res) => {
       res.status(404).send("Script not found.");
       return;
     }
-    res.render("script-detail", { script });
+    const blocksWithDepth = script.blocks.map((block) => ({
+      ...block,
+      depth: block.parentId ? 1 : 0,
+    }));
+    res.render("script-detail", { script, blocksWithDepth });
   } finally {
     await repository.disconnect();
   }
