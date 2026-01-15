@@ -29,9 +29,17 @@ npm run build
 npm run start
 ```
 
+## Fluxo de scripts
+1. Acesse `http://localhost:3000`.
+2. Informe o *database* e envie o arquivo SQL.
+3. O sistema registra o script, separa blocos e lista dependências detectadas.
+
 ## Endpoints
 - `GET /api/health`
 - `GET /api/catalog`
 - `POST /api/catalog/seed`
+- `GET /api/scripts`
+- `GET /api/scripts/:id`
+- `POST /scripts/upload`
 
 A UI básica fica disponível em `http://localhost:3000`.

@@ -51,12 +51,29 @@
         font-weight: 600;
       }
 
+      input[type="text"],
+      input[type="file"] {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #d6d6df;
+      }
+
       pre {
         background: #0f0f19;
         color: #c8c8ff;
         padding: 16px;
         border-radius: 12px;
         overflow-x: auto;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        background: #efeefe;
+        color: #5a4bd1;
+        margin-right: 6px;
       }
     </style>
   </head>
@@ -68,15 +85,56 @@
 
     <main>
       <section class="card">
-        <h2>Status do catálogo</h2>
-        <p id="status">Carregando...</p>
-        <button id="refresh">Recarregar</button>
-        <button id="seed">Criar catálogo vazio</button>
+        <h2>Enviar script SQL</h2>
+        <form action="/scripts/upload" method="post" enctype="multipart/form-data">
+          <div class="grid">
+            <label>
+              Database
+              <input type="text" name="databaseName" placeholder="ERP_PROD" required />
+            </label>
+            <label>
+              Arquivo SQL
+              <input type="file" name="sqlFile" accept=".sql,.txt" required />
+            </label>
+          </div>
+          <p>
+            <button type="submit">Processar script</button>
+          </p>
+        </form>
       </section>
 
       <section class="card">
-        <h2>Snapshot atual</h2>
-        <pre id="catalog">Aguardando dados...</pre>
+        <h2>Últimos scripts</h2>
+        <% if (scripts.length === 0) { %>
+        <p>Nenhum script processado ainda.</p>
+        <% } %>
+        <% scripts.forEach((script) => { %>
+        <article style="margin-bottom: 24px;">
+          <h3><%= script.fileName %></h3>
+          <p>
+            <span class="tag"><%= script.databaseName %></span>
+            <span class="tag"><%= script.createdAt %></span>
+          </p>
+          <h4>Dependências</h4>
+          <% if (script.dependencies.length === 0) { %>
+          <p>Sem dependências detectadas.</p>
+          <% } %>
+          <ul>
+            <% script.dependencies.forEach((dependency) => { %>
+            <li><strong><%= dependency.type %>:</strong> <%= dependency.name %></li>
+            <% }) %>
+          </ul>
+          <h4>Blocos</h4>
+          <div class="grid">
+            <% script.blocks.forEach((block) => { %>
+            <div class="card" style="background:#f9f9ff;">
+              <span class="tag"><%= block.type %></span>
+              <p><%= block.summary %></p>
+            </div>
+            <% }) %>
+          </div>
+        </article>
+        <% }) %>
       </section>
 
       <section class="card">
@@ -97,41 +155,5 @@
         </div>
       </section>
     </main>
-
-    <script type="module">
-      const statusEl = document.getElementById("status");
-      const catalogEl = document.getElementById("catalog");
-      const refreshBtn = document.getElementById("refresh");
-      const seedBtn = document.getElementById("seed");
-
-      const loadCatalog = async () => {
-        statusEl.textContent = "Carregando catálogo...";
-        const response = await fetch("/api/catalog");
-        const data = await response.json();
-        catalogEl.textContent = JSON.stringify(data, null, 2);
-        statusEl.textContent = "Catálogo carregado.";
-      };
-
-      refreshBtn.addEventListener("click", () => {
-        loadCatalog().catch((err) => {
-          statusEl.textContent = `Erro: ${err.message}`;
-        });
-      });
-
-      seedBtn.addEventListener("click", async () => {
-        statusEl.textContent = "Criando catálogo...";
-        const response = await fetch("/api/catalog/seed", { method: "POST" });
-        if (!response.ok) {
-          const data = await response.json();
-          statusEl.textContent = data.message ?? "Falha ao criar catálogo.";
-          return;
-        }
-        await loadCatalog();
-      });
-
-      loadCatalog().catch((err) => {
-        statusEl.textContent = `Erro: ${err.message}`;
-      });
-    </script>
   </body>
 </html>
