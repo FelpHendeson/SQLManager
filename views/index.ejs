@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SQLManager</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Inter", system-ui, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: #f5f5f7;
+        color: #1b1b1f;
+      }
+
+      header {
+        background: #141425;
+        color: white;
+        padding: 24px 32px;
+      }
+
+      main {
+        padding: 32px;
+        display: grid;
+        gap: 24px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 8px 24px rgba(20, 20, 37, 0.08);
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      button {
+        border: none;
+        background: #6c5ce7;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      input[type="text"],
+      input[type="file"],
+      select {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #d6d6df;
+      }
+
+      pre {
+        background: #0f0f19;
+        color: #c8c8ff;
+        padding: 16px;
+        border-radius: 12px;
+        overflow-x: auto;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        background: #efeefe;
+        color: #5a4bd1;
+        margin-right: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>SQLManager</h1>
+      <p>Monolito com API, banco e UI para catálogo Oracle.</p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Enviar script SQL</h2>
+        <form action="/scripts/upload" method="post" enctype="multipart/form-data">
+          <div class="grid">
+            <label>
+              Database
+              <input type="text" name="databaseName" placeholder="ERP_PROD" required />
+            </label>
+            <label>
+              Arquivo SQL
+              <input type="file" name="sqlFile" accept=".sql,.txt" required />
+            </label>
+          </div>
+          <p>
+            <button type="submit">Processar script</button>
+          </p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Filtrar por database</h2>
+        <form action="/" method="get">
+          <label>
+            Database
+            <select name="database">
+              <option value="">Todos</option>
+              <% databases.forEach((database) => { %>
+              <option value="<%= database %>" <%= database === databaseFilter ? "selected" : "" %>>
+                <%= database %>
+              </option>
+              <% }) %>
+            </select>
+          </label>
+          <p>
+            <button type="submit">Aplicar filtro</button>
+          </p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Últimos scripts</h2>
+        <% if (scripts.length === 0) { %>
+        <p>Nenhum script processado ainda.</p>
+        <% } %>
+        <% scripts.forEach((script) => { %>
+        <article style="margin-bottom: 24px;">
+          <h3><%= script.fileName %></h3>
+          <p>
+            <span class="tag"><%= script.databaseName %></span>
+            <span class="tag"><%= script.createdAt %></span>
+          </p>
+          <p>
+            <a href="/scripts/<%= script.id %>">Ver detalhes</a>
+          </p>
+          <h4>Dependências</h4>
+          <% if (script.dependencies.length === 0) { %>
+          <p>Sem dependências detectadas.</p>
+          <% } %>
+          <ul>
+            <% script.dependencies.forEach((dependency) => { %>
+            <li><strong><%= dependency.type %>:</strong> <%= dependency.name %></li>
+            <% }) %>
+          </ul>
+          <h4>Blocos</h4>
+          <div class="grid">
+            <% script.blocks.forEach((block) => { %>
+            <div class="card" style="background:#f9f9ff;">
+              <span class="tag"><%= block.type %></span>
+              <p><%= block.summary %></p>
+            </div>
+            <% }) %>
+          </div>
+        </article>
+        <% }) %>
+      </section>
+
+      <section class="card">
+        <h2>Próximos passos</h2>
+        <div class="grid">
+          <div>
+            <strong>1. Importação</strong>
+            <p>Adicionar ingestão de DDL/SQL para popular tabelas e packages.</p>
+          </div>
+          <div>
+            <strong>2. Dependências</strong>
+            <p>Extrair chamadas internas/externas e salvar no catálogo.</p>
+          </div>
+          <div>
+            <strong>3. Canvas</strong>
+            <p>Criar uma visualização navegável de objetos e relações.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Área do desenvolvedor</h2>
+        <p>Ferramentas avançadas para manutenção do ambiente.</p>
+        <p><a href="/admin">Acessar painel</a></p>
+      </section>
+    </main>
+  </body>
+</html>
