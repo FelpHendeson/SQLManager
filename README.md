@@ -6,7 +6,7 @@ Aplicação para auxiliar e facilitar a escrita e leitura de SQL.
 A aplicação é um **monolito** em TypeScript que expõe:
 - **API** REST para consultar/criar catálogo.
 - **Persistência MongoDB** para armazenar o catálogo.
-- **UI simples** servida pelo próprio servidor.
+- **UI simples** servida pelo próprio servidor via **EJS**.
 
 ## Pré-requisitos
 - Node.js 18+
