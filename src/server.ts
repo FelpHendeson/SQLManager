@@ -43,16 +43,20 @@ app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "../public"), { index: false }));
 
-app.get("/", async (_req, res) => {
+app.get("/", async (req, res) => {
   const repository = createScriptsRepository();
   if (!repository) {
     res.status(503).send("MongoDB config missing.");
     return;
   }
+  const databaseFilter = String(req.query.database ?? "").trim();
   await repository.connect();
   try {
-    const scripts = await repository.list(10);
-    res.render("index", { scripts });
+    const databases = await repository.listDatabases();
+    const scripts = databaseFilter
+      ? await repository.listByDatabase(databaseFilter, 10)
+      : await repository.list(10);
+    res.render("index", { scripts, databases, databaseFilter });
   } finally {
     await repository.disconnect();
   }
@@ -65,7 +69,7 @@ app.post("/scripts/upload", upload.single("sqlFile"), async (req, res) => {
     return;
   }
   const databaseName = String(req.body.databaseName ?? "").trim();
-  const file = req.file;
+  const file = req.file as Express.Multer.File | undefined;
 
   if (!databaseName || !file) {
     res.status(400).send("Database e arquivo são obrigatórios.");
@@ -83,6 +87,55 @@ app.post("/scripts/upload", upload.single("sqlFile"), async (req, res) => {
   }
 
   res.redirect("/");
+});
+
+app.get("/scripts/:id", async (req, res) => {
+  const repository = createScriptsRepository();
+  if (!repository) {
+    res.status(503).send("MongoDB config missing.");
+    return;
+  }
+  await repository.connect();
+  try {
+    const script = await repository.findById(req.params.id);
+    if (!script) {
+      res.status(404).send("Script not found.");
+      return;
+    }
+    res.render("script-detail", { script });
+  } finally {
+    await repository.disconnect();
+  }
+});
+
+app.get("/admin", async (_req, res) => {
+  const repository = createScriptsRepository();
+  if (!repository) {
+    res.status(503).send("MongoDB config missing.");
+    return;
+  }
+  await repository.connect();
+  try {
+    const scripts = await repository.list(50);
+    res.render("admin", { scripts });
+  } finally {
+    await repository.disconnect();
+  }
+});
+
+app.post("/admin/scripts/clear", async (_req, res) => {
+  const repository = createScriptsRepository();
+  if (!repository) {
+    res.status(503).send("MongoDB config missing.");
+    return;
+  }
+  await repository.connect();
+  try {
+    await repository.deleteAll();
+  } finally {
+    await repository.disconnect();
+  }
+  res.redirect("/admin");
 });
 
 app.get("/api/catalog", async (_req, res) => {

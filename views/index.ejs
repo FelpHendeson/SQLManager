@@ -52,7 +52,8 @@
       }
 
       input[type="text"],
-      input[type="file"] {
+      input[type="file"],
+      select {
         padding: 10px 12px;
         border-radius: 8px;
         border: 1px solid #d6d6df;
@@ -104,6 +105,26 @@
       </section>
 
       <section class="card">
+        <h2>Filtrar por database</h2>
+        <form action="/" method="get">
+          <label>
+            Database
+            <select name="database">
+              <option value="">Todos</option>
+              <% databases.forEach((database) => { %>
+              <option value="<%= database %>" <%= database === databaseFilter ? "selected" : "" %>>
+                <%= database %>
+              </option>
+              <% }) %>
+            </select>
+          </label>
+          <p>
+            <button type="submit">Aplicar filtro</button>
+          </p>
+        </form>
+      </section>
+
+      <section class="card">
         <h2>Últimos scripts</h2>
         <% if (scripts.length === 0) { %>
         <p>Nenhum script processado ainda.</p>
@@ -114,6 +135,9 @@
           <p>
             <span class="tag"><%= script.databaseName %></span>
             <span class="tag"><%= script.createdAt %></span>
+          </p>
+          <p>
+            <a href="/scripts/<%= script.id %>">Ver detalhes</a>
           </p>
           <h4>Dependências</h4>
           <% if (script.dependencies.length === 0) { %>
@@ -153,6 +177,12 @@
             <p>Criar uma visualização navegável de objetos e relações.</p>
           </div>
         </div>
+      </section>
+
+      <section class="card">
+        <h2>Área do desenvolvedor</h2>
+        <p>Ferramentas avançadas para manutenção do ambiente.</p>
+        <p><a href="/admin">Acessar painel</a></p>
       </section>
     </main>
   </body>

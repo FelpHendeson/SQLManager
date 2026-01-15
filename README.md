@@ -33,6 +33,8 @@ npm run start
 1. Acesse `http://localhost:3000`.
 2. Informe o *database* e envie o arquivo SQL.
 3. O sistema registra o script, separa blocos e lista dependências detectadas.
+4. Clique em “Ver detalhes” para abrir a tela de análise completa.
+5. A área `/admin` permite limpeza total e inspeção bruta.
 
 ## Endpoints
 - `GET /api/health`
@@ -41,5 +43,8 @@ npm run start
 - `GET /api/scripts`
 - `GET /api/scripts/:id`
 - `POST /scripts/upload`
+- `GET /scripts/:id`
+- `GET /admin`
+- `POST /admin/scripts/clear`
 
 A UI básica fica disponível em `http://localhost:3000`.

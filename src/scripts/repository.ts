@@ -39,10 +39,31 @@ export class ScriptsRepository {
     return documents as ScriptArtifact[];
   }
 
+  async listByDatabase(databaseName: string, limit = 10): Promise<ScriptArtifact[]> {
+    const collection = this.getCollection();
+    const documents = await collection
+      .find({ databaseName }, { projection: { _id: 0 } })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .toArray();
+    return documents as ScriptArtifact[];
+  }
+
+  async listDatabases(): Promise<string[]> {
+    const collection = this.getCollection();
+    const databases = await collection.distinct("databaseName");
+    return databases as string[];
+  }
+
   async findById(id: string): Promise<ScriptArtifact | null> {
     const collection = this.getCollection();
     const document = await collection.findOne({ _id: id }, { projection: { _id: 0 } });
     return document as ScriptArtifact | null;
+  }
+
+  async deleteAll(): Promise<void> {
+    const collection = this.getCollection();
+    await collection.deleteMany({});
   }
 
   private getCollection(): Collection<ScriptArtifact & { _id: string }> {
